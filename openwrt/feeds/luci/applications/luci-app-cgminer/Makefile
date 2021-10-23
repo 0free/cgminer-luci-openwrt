@@ -2,8 +2,8 @@
 include $(TOPDIR)/rules.mk
 
 LUCI_TITLE:=LuCI Support for CGMiner
-LUCI_DEPENDS:=
+LUCI_DEPENDS:=+luci-compat
 
 include ../../luci.mk
 
-# call BuildPackage - OpenWrt buildroot signaturenclude ../../build/module.mk
+# call BuildPackage - OpenWrt buildroot signature

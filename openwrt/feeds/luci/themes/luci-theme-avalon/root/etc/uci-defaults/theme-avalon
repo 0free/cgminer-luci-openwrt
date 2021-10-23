@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ "$PKG_UPGRADE" != 1 ]; then
-	uci get luci.themes.OpenWrt >/dev/null 2>&1 || \
+	uci get luci.themes.Avalon >/dev/null 2>&1 || \
 	uci batch <<-EOF
 		set luci.themes.Avalon=/luci-static/avalon
 		set luci.main.mediaurlbase=/luci-static/avalon
