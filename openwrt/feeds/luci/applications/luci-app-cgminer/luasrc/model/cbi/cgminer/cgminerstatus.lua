@@ -26,7 +26,7 @@ function ghsav.cfgvalue(self, section)
 	local v = Value.cfgvalue(self, section):gsub(",","")
 	local n = tonumber(v)
 	if n ~= nil then
-		return string.format("%.2f", tonumber(n)/1000)
+		return string.format("%.2f", n/1000)
 	end
 end
 
