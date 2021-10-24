@@ -1,6 +1,5 @@
 --[[
 LuCI - Lua Configuration Interface
-$Id$
 ]]--
 
 btn_restart = luci.dispatcher.build_url("admin", "status", "cgminerstatus", "ctrl", "restart")
@@ -8,10 +7,9 @@ btn_stop = luci.dispatcher.build_url("admin", "status", "cgminerstatus", "ctrl",
 btn_start = luci.dispatcher.build_url("admin", "status", "cgminerstatus", "ctrl", "start")
 
 f = SimpleForm("cgminerstatus", translate("CGMiner Status") ..
-	" <input type=\"button\" value=\" " .. translate("Restart CGMiner") .. " \" onclick=\"location.href='" .. btn_restart .. "'\" href=\"#\"/>" ..
-	" <input type=\"button\" value=\" " .. translate("Stop CGMiner") .. " \" onclick=\"location.href='" .. btn_stop .. "'\" href=\"#\"/>" ..
-	" <input type=\"button\" value=\" " .. translate("Start CGMiner") .. " \" onclick=\"location.href='" .. btn_start .. "'\" href=\"#\"/>",
-	translate("Please visit <a href='https://canaan.io/support'> https://canaan.io/support</a> for support."))
+	"<input type=\"button\" value=\"" .. translate("Restart CGMiner") .. "\" onclick=\"location.href='" .. btn_restart .. "'\" href=\"#\"/>" ..
+	"<input type=\"button\" value=\"" .. translate("Stop CGMiner") .. "\" onclick=\"location.href='" .. btn_stop .. "'\" href=\"#\"/>" ..
+	"<input type=\"button\" value=\"" .. translate("Start CGMiner") .. "\" onclick=\"location.href='" .. btn_start .. "'\" href=\"#\"/>")
 
 f.reset = false
 f.submit = false
