@@ -1,7 +1,6 @@
 require("luci.util")
 
-m = Map("cgminer", translate("Configuration"),
-        translate("Please visit <a href='https://canaan.io/support/'> https://canaan.io/support/</a> for support."))
+m = Map("cgminer", translate("Configuration"),translate(""))
 
 conf = m:section(TypedSection, "cgminer", "")
 conf.anonymous = true
