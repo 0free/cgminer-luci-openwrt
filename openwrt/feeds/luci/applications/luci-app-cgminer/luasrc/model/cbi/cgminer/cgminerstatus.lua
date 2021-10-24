@@ -24,7 +24,10 @@ ghsav = t:option(DummyValue, "mhsav", translate("GHSav"))
 
 function ghsav.cfgvalue(self, section)
 	local v = Value.cfgvalue(self, section):gsub(",","")
-	return string.format("%.2f", tonumber(v)/1000)
+	local n = tonumber(v)
+	if n ~= nil then
+		return string.format("%.2f", tonumber(n)/1000)
+	end
 end
 
 t:option(DummyValue, "accepted", translate("Accepted"))
