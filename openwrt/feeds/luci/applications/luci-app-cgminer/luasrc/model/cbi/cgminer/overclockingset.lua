@@ -1,4 +1,8 @@
-require ("luci.http")
+--[[ Model - CGMiner OverClocking Set ]]--
+
+require("luci.http")
+require("luci.dispatcher")
+require("luci.sys")
 
 f = SimpleForm("ohr", nil, nil)
 f.reset = false
@@ -10,13 +14,11 @@ set_list:value("enable", translate("Enable"))
 
 if luci.http.formvalue("cbi.submit") then
 	flag = f:formvalue("cbid.ohr.1.set")
-
 	i = 0
-	while( i < 4 )
-	do
+	while ( i < 4 ) do
 		if flag == "disable" then
 			cmd = "/usr/bin/cgminer-api " .. "\'ascset|" .. i .. ',overclocking,' .. '0' .. "\'"
-	        elseif flag == "enable" then
+		elseif flag == "enable" then
 			cmd = "/usr/bin/cgminer-api " .. "\'ascset|" .. i .. ',overclocking,' .. '1' .. "\'"
 		end
 		luci.sys.exec(cmd)
