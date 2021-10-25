@@ -1,20 +1,34 @@
---[[
-LuCI - Lua Configuration Interface
-]]--
+--[[ Controller - CGMiner ]]--
+
+require("luci.cbi")
+require("luci.util")
+require("luci.http")
+require("luci.dispatcher")
+require("luci.model.uci")
+require("luci.template")
+
+require("nixio")
+require("nixio.fs")
+require("nixio.util")
 
 module("luci.controller.cgminer", package.seeall)
 
 function index()
-	entry({"admin", "status", "cgminer"}, cbi("cgminer/cgminer"), _("CGMiner Configuration"), 90)
-	entry({"admin", "status", "cgminerapi"}, call("action_cgminerapi"), _("CGMiner API Log"), 91)
-	entry({"admin", "status", "cgminerstatus"}, cbi("cgminer/cgminerstatus"), _("CGMiner Status"), 92)
-	entry({"admin", "status", "mmupgrade"}, call("action_mmupgrade"), _("MM Upgrade"), 93)
-	entry({"admin", "status", "checkupgrade"}, call("action_checkupgrade"), nil).leaf = true
-	entry({"admin", "status", "cgminerstatus", "ctrl"}, call("action_cgminerctrl"), nil).leaf = true
-	entry({"admin", "status", "set_miningmode"}, call("action_setminingmode"), nil).leaf = true
-	entry({"admin", "status", "cgminerdebug"}, call("action_cgminerdebug"), nil).leaf = true
-	entry({"developer"}, cbi("cgminer/overclockinglogin"), nil, 94)
-	entry({"developer", "overclockingset"}, cbi("cgminer/overclockingset"), nil, 94)
+
+	entry({"admin","cgminer","cgminerstatus"}, cbi("cgminer/cgminerstatus"), _("CGMiner Status"), 90)
+	entry({"admin","cgminer","cgminer"}, cbi("cgminer/cgminer"), _("CGMiner Configuration"), 91)
+
+	entry({"admin","cgminer","cgminerapi"}, call("action_cgminerapi"), _("CGMiner API Log"), 92)
+	entry({"admin","cgminer","mmupgrade"}, call("action_mmupgrade"), _("MM Upgrade"), 93)
+
+	entry({"admin","cgminer"}, cbi("cgminer/overclockinglogin"), _("CGMiner OverClocking Login"),94)
+	entry({"admin","cgminer","overclockingset"}, cbi("cgminer/overclockingset"), _("CGMiner OverClocking Set"), 94)
+
+	entry({"admin","cgminer","cgminerstatus","ctrl"}, call("action_cgminerctrl"), nil).leaf = true
+	entry({"admin","cgminer","set_miningmode"}, call("action_setminingmode"), nil).leaf = true
+	entry({"admin","cgminer","checkupgrade"}, call("action_checkupgrade"), nil).leaf = true
+	entry({"admin","cgminer","cgminerdebug"}, call("action_cgminerdebug"), nil).leaf = true
+
 end
 
 function action_cgminerctrl(args)
@@ -27,17 +41,14 @@ function action_cgminerctrl(args)
 			luci.util.exec("[ -e /root/.cron ] && sed -i -e '/.*cgminer-monitor/d' /etc/crontabs/root")
 			luci.util.exec("[ -e /root/.cron ] && cat /root/.cron >> /etc/crontabs/root")
 		end
-		luci.http.redirect(
-		luci.dispatcher.build_url("admin", "status", "cgminerstatus")
-		)
+		luci.http.redirect(luci.dispatcher.build_url("admin", "cgminer", "cgminerstatus"))
 	end
 end
 
 function action_cgminerapi()
-	local pp   = io.popen("echo -n \"[Firmware Version] => \"; cat /etc/avalon_version; /usr/bin/cgminer-api stats|sed 's/ =>/:/g'|sed 's/\\] /\\]\\n    /g'|sed 's/:/ =>/g'")
+	local pp = io.popen("echo -n \"[Firmware Version] => \"; cat /etc/avalon_version; /usr/bin/cgminer-api stats|sed 's/ =>/:/g'|sed 's/\\] /\\]\\n    /g'|sed 's/:/ =>/g'")
 	local data = pp:read("*a")
 	pp:close()
-
 	luci.template.render("cgminerapi", {api=data})
 end
 
@@ -75,18 +86,15 @@ function valuetodate(elapsed)
 		end
 		return str
 	end
-
 	return "date invalid"
 end
 
 function summary()
 	local data = {}
-	local summary = luci.util.execi("/usr/bin/cgminer-api -o summary | sed \"s/|/\\n/g\" ")
-
+	local summary = luci.util.execi("/usr/bin/cgminer-api -o summary | sed \"s/|/\\n/g\"")
 	if not summary then
 		return
 	end
-
 	for line in summary do
 		local elapsed, mhsav, foundblocks, getworks, accepted,
 		rejected, hw, utility, stale, getfailures,
@@ -136,13 +144,14 @@ function summary()
 			}
 		end
 	end
-
 	return data
 end
 
 function pools()
+
 	local data = {}
-	local pools = luci.util.execi("/usr/bin/cgminer-api -o pools | sed \"s/|/\\n/g\" ")
+
+	local pools = luci.util.execi("/usr/bin/cgminer-api -o pools | sed \"s/|/\\n/g\"")
 
 	if not pools then
 		return
@@ -216,7 +225,9 @@ function pools()
 end
 
 function devs()
+
 	local data = {}
+
 	local devs = luci.util.execi("/usr/bin/cgminer-api -o edevs | sed \"s/|/\\n/g\" ")
 
 	if not devs then
@@ -266,6 +277,7 @@ function devs()
 end
 
 function stats()
+
 	local data = {}
 
 	local stats = luci.util.execi("/usr/bin/cgminer-api -o estats | sed \"s/|/\\n/g\" | grep AV9")
@@ -365,17 +377,18 @@ function action_setminingmode()
 		uci:commit("cgminer")
 		if mmode == "customs" then
 			luci.http.redirect(
-			luci.dispatcher.build_url("admin", "status", "cgminer")
+			luci.dispatcher.build_url("admin", "cgminer", "cgminer")
 			)
 		else
 			luci.http.redirect(
-			luci.dispatcher.build_url("admin", "status", "cgminerstatus", "ctrl", "restart")
+			luci.dispatcher.build_url("admin", "cgminer", "cgminerstatus", "ctrl", "restart")
 			)
 		end
 	end
 end
 
 function action_mmupgrade()
+
 	local mm_tmp   = "/tmp/mm.mcs"
 	local finish_flag   = "/tmp/mm_finish"
 
@@ -383,20 +396,16 @@ function action_mmupgrade()
 		if nixio.fs.access("/usr/bin/mm-tools") then
 			return true
 		end
-
 		return nil
 	end
 
 	local function mm_supported()
 		local mm_tmp   = "/tmp/mm.mcs"
-
 		if not nixio.fs.access(mm_tmp) then
 			return false
 		end
-
 		local filesize = nixio.fs.stat(mm_tmp).size
-
-		-- TODO: Check mm.mcs format
+		-- check mm.mcs format
 		if filesize == 0 then
 			return false
 		end
@@ -430,6 +439,7 @@ function action_mmupgrade()
 	end
 
 	local fp
+
 	luci.http.setfilehandler(
 		function(meta, chunk, eof)
 			if not fp then
@@ -447,9 +457,7 @@ function action_mmupgrade()
 	)
 
 	if luci.http.formvalue("image") or luci.http.formvalue("step") then
-		--
 		-- Check firmware
-		--
 		local step = tonumber(luci.http.formvalue("step") or 1)
 		if step == 1 then
 			if mm_supported() == true then
@@ -465,9 +473,7 @@ function action_mmupgrade()
 					mm_image_invalid = true
 				})
 			end
-		--
 		--  Upgrade firmware
-		--
 		elseif step == 2 then
 			luci.template.render("mmapply")
 			fork_exec("mmupgrade;touch %q;" %{ finish_flag })
@@ -486,14 +492,12 @@ end
 
 function action_checkupgrade()
 	local status = {}
-	local finish_flag   = "/tmp/mm_finish"
-
+	local finish_flag = "/tmp/mm_finish"
 	if not nixio.fs.access(finish_flag) then
 		status.finish = 0
 	else
 		status.finish = 1
 	end
-
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(status)
 end
@@ -505,7 +509,6 @@ function fork_exec(command)
 	elseif pid == 0 then
 		-- change to root dir
 		nixio.chdir("/")
-
 		-- patch stdin, out, err to /dev/null
 		local null = nixio.open("/dev/null", "w+")
 		if null then
@@ -516,7 +519,6 @@ function fork_exec(command)
 				null:close()
 			end
 		end
-
 		-- replace with target command
 		nixio.exec("/bin/sh", "-c", command)
 	end
@@ -524,7 +526,5 @@ end
 
 function action_cgminerdebug()
 	luci.util.exec("cgminer-api \"debug|D\"")
-	luci.http.redirect(
-	luci.dispatcher.build_url("admin", "status", "cgminerapi")
-	)
+	luci.http.redirect(luci.dispatcher.build_url("admin", "cgminer", "cgminerapi"))
 end
