@@ -1,6 +1,7 @@
---[[
-LuCI - Lua Configuration Interface
-]]--
+--[[ Model - CGMiner Status ]]--
+
+require("luci.dispatcher")
+require("luci.util")
 
 btn_restart = luci.dispatcher.build_url("admin", "status", "cgminerstatus", "ctrl", "restart")
 btn_stop = luci.dispatcher.build_url("admin", "status", "cgminerstatus", "ctrl", "stop")
@@ -9,7 +10,8 @@ btn_start = luci.dispatcher.build_url("admin", "status", "cgminerstatus", "ctrl"
 f = SimpleForm("cgminerstatus", translate("CGMiner Status") ..
 	"<input type=\"button\" value=\"" .. translate("Restart CGMiner") .. "\" onclick=\"location.href='" .. btn_restart .. "'\" href=\"#\"/>" ..
 	"<input type=\"button\" value=\"" .. translate("Stop CGMiner") .. "\" onclick=\"location.href='" .. btn_stop .. "'\" href=\"#\"/>" ..
-	"<input type=\"button\" value=\"" .. translate("Start CGMiner") .. "\" onclick=\"location.href='" .. btn_start .. "'\" href=\"#\"/>")
+	"<input type=\"button\" value=\"" .. translate("Start CGMiner") .. "\" onclick=\"location.href='" .. btn_start .. "'\" href=\"#\"/>"
+	)
 
 f.reset = false
 f.submit = false
@@ -22,9 +24,7 @@ ghsav = t:option(DummyValue, "mhsav", translate("GHSav"))
 
 function ghsav.cfgvalue(self, section)
 	local v = Value.cfgvalue(self, section):gsub(",","")
-	if v ~= nil then
-		return string.format("%.2f", tonumber(v)/1000)
-	end
+	return string.format("%.2f", tonumber(v)/1000)
 end
 
 t:option(DummyValue, "accepted", translate("Accepted"))
@@ -57,45 +57,35 @@ ghsav = t1:option(DummyValue, "mhsav", translate("GHSav"))
 
 function ghsav.cfgvalue(self, section)
 	local v = Value.cfgvalue(self, section)
-	if v ~= nil then
-		return string.format("%.2f", v/1000)
-	end
+	return string.format("%.2f", v/1000)
 end
 
 ghs5s = t1:option(DummyValue, "mhs5s", translate("GHS5s"))
 
 function ghs5s.cfgvalue(self, section)
 	local v = Value.cfgvalue(self, section)
-	if v ~= nil then
-		return string.format("%.2f", v/1000)
-	end
+	return string.format("%.2f", v/1000)
 end
 
 ghs1m = t1:option(DummyValue, "mhs1m", translate("GHS1m"))
 
 function ghs1m.cfgvalue(self, section)
 	local v = Value.cfgvalue(self, section)
-	if v ~= nil then
-		return string.format("%.2f", v/1000)
-	end
+	return string.format("%.2f", v/1000)
 end
 
 ghs5m = t1:option(DummyValue, "mhs5m", translate("GHS5m"))
 
 function ghs5m.cfgvalue(self, section)
 	local v = Value.cfgvalue(self, section)
-	if v ~= nil then
-		return string.format("%.2f", v/1000)
-	end
+	return string.format("%.2f", v/1000)
 end
 
 ghs15m = t1:option(DummyValue, "mhs15m", translate("GHS15m"))
 
 function ghs15m.cfgvalue(self, section)
 	local v = Value.cfgvalue(self, section)
-	if v ~= nil then
-		return string.format("%.2f", v/1000)
-	end
+	return string.format("%.2f", v/1000)
 end
 
 t1:option(DummyValue, "lvw", translate("LastValidWork"))
