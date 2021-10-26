@@ -1,8 +1,26 @@
---[[ Model - CGMiner OverClocking Set ]]--
+--[[ Model - CGMiner OverClocking ]]--
 
 require("luci.http")
 require("luci.dispatcher")
 require("luci.sys")
+
+login = SimpleForm("login", nil, nil)
+login.reset = false
+login.submit = translate("Login")
+
+btn = login:field(Button, "")
+btn.template = "overclockinglogin"
+
+if luci.http.formvalue("cbi.submit") then
+	pwd = luci.http.formvalue("password")
+	if pwd == "canaan" then
+		luci.http.redirect(luci.dispatcher.build_url("admin", "services", "overclocking"))
+	else
+		dummy = login:field(DummyValue, "dummy", "")
+		dummy.template = "overclockingerror"
+	end
+	return login
+end
 
 f = SimpleForm("ohr", nil, nil)
 f.reset = false
@@ -24,11 +42,10 @@ if luci.http.formvalue("cbi.submit") then
 		luci.sys.exec(cmd)
 		i = i + 1
 	end
-	luci.http.redirect(luci.dispatcher.build_url("admin", "status", "overclockingset"))
+	luci.http.redirect(luci.dispatcher.build_url("admin", "services", "overclocking"))
 end
 
 dummy = f:field(DummyValue,"dumm", "")
 dummy.template = "overclockingwarn"
 
 return f
-

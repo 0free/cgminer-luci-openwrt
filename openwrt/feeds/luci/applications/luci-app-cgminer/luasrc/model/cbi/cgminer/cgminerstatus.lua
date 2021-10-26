@@ -3,9 +3,9 @@
 require("luci.dispatcher")
 require("luci.util")
 
-btn_restart = luci.dispatcher.build_url("admin", "status", "cgminerstatus", "ctrl", "restart")
-btn_stop = luci.dispatcher.build_url("admin", "status", "cgminerstatus", "ctrl", "stop")
-btn_start = luci.dispatcher.build_url("admin", "status", "cgminerstatus", "ctrl", "start")
+btn_restart = luci.dispatcher.build_url("admin", "services", "cgminerstatus", "ctrl", "restart")
+btn_stop = luci.dispatcher.build_url("admin", "services", "cgminerstatus", "ctrl", "stop")
+btn_start = luci.dispatcher.build_url("admin", "services", "cgminerstatus", "ctrl", "start")
 
 f = SimpleForm("cgminerstatus", translate("CGMiner Status") ..
 	"<input type=\"button\" value=\"" .. translate("Restart CGMiner") .. "\" onclick=\"location.href='" .. btn_restart .. "'\" href=\"#\"/>" ..
@@ -135,3 +135,4 @@ t1:option(DummyValue, "fan", translate("<abbr title=\"RPM/Percentage\">Fan</abbr
 t1:option(DummyValue, "pg", translate("<abbr title=\"Power Good\">PG</abbr>"))
 
 return f
+

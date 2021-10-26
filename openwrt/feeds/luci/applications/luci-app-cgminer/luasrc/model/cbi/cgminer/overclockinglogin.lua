@@ -13,7 +13,7 @@ btn.template = "overclockinglogin"
 if luci.http.formvalue("cbi.submit") then
 	pwd = luci.http.formvalue("password")
 	if pwd == "canaan" then
-		luci.http.redirect(luci.dispatcher.build_url("admin", "overclockingset"))
+		luci.http.redirect(luci.dispatcher.build_url("admin", "status", "overclockingset"))
 	else
 		dummy = login:field(DummyValue, "dummy", "")
 		dummy.template = "overclockingerror"
@@ -21,3 +21,4 @@ if luci.http.formvalue("cbi.submit") then
 end
 
 return login
+

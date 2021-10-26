@@ -62,3 +62,4 @@ api_allow = conf:option(Value, "api_allow", translate("API allow (Default: W:127
 more_options = conf:option(Value, "more_options", translate("more options"))
 
 return m
+

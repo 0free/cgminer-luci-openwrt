@@ -14,21 +14,15 @@ require("nixio.util")
 module("luci.controller.cgminer", package.seeall)
 
 function index()
-
-	entry({"admin","cgminer","cgminerstatus"}, cbi("cgminer/cgminerstatus"), _("CGMiner Status"), 90)
-	entry({"admin","cgminer","cgminer"}, cbi("cgminer/cgminer"), _("CGMiner Configuration"), 91)
-
-	entry({"admin","cgminer","cgminerapi"}, call("action_cgminerapi"), _("CGMiner API Log"), 92)
-	entry({"admin","cgminer","mmupgrade"}, call("action_mmupgrade"), _("MM Upgrade"), 93)
-
-	entry({"admin","cgminer"}, cbi("cgminer/overclockinglogin"), _("CGMiner OverClocking Login"),94)
-	entry({"admin","cgminer","overclockingset"}, cbi("cgminer/overclockingset"), _("CGMiner OverClocking Set"), 94)
-
-	entry({"admin","cgminer","cgminerstatus","ctrl"}, call("action_cgminerctrl"), nil).leaf = true
-	entry({"admin","cgminer","set_miningmode"}, call("action_setminingmode"), nil).leaf = true
-	entry({"admin","cgminer","checkupgrade"}, call("action_checkupgrade"), nil).leaf = true
-	entry({"admin","cgminer","cgminerdebug"}, call("action_cgminerdebug"), nil).leaf = true
-
+	entry( { "admin", "services", "cgminerstatus" }, cbi("cgminer/cgminerstatus"), _("CGMiner Status"), 1 )
+	entry( { "admin", "services", "cgminer" }, cbi("cgminer/cgminer"), _("CGMiner Configuration"), 2 )
+	entry( { "admin", "services", "overclocking" }, cbi("cgminer/overclocking"), _("CGMiner OverClocking"), 3 )
+	entry( { "admin", "services", "cgminerapi" }, call("action_cgminerapi"), _("CGMiner API Log"), 4 )
+	entry( { "admin", "services", "mmupgrade" }, call("action_mmupgrade"), _("CGMiner MM Upgrade"), 5 )
+	entry( { "admin", "services", "cgminerstatus", "ctrl" }, call("action_cgminerctrl") ).leaf = true
+	entry( { "admin", "services", "set_miningmode" }, call("action_setminingmode") ).leaf = true
+	entry( { "admin", "services", "checkupgrade" }, call("action_checkupgrade") ).leaf = true
+	entry( { "admin", "services", "cgminerdebug" }, call("action_cgminerdebug") ).leaf = true
 end
 
 function action_cgminerctrl(args)
@@ -41,7 +35,7 @@ function action_cgminerctrl(args)
 			luci.util.exec("[ -e /root/.cron ] && sed -i -e '/.*cgminer-monitor/d' /etc/crontabs/root")
 			luci.util.exec("[ -e /root/.cron ] && cat /root/.cron >> /etc/crontabs/root")
 		end
-		luci.http.redirect(luci.dispatcher.build_url("admin", "cgminer", "cgminerstatus"))
+		luci.http.redirect(luci.dispatcher.build_url("admin", "services", "cgminerstatus"))
 	end
 end
 
@@ -91,7 +85,7 @@ end
 
 function summary()
 	local data = {}
-	local summary = luci.util.execi("/usr/bin/cgminer-api -o summary | sed \"s/|/\\n/g\"")
+	local summary = luci.util.execi("/usr/bin/cgminer-api -o summary | sed \"s/|/\\n/g\" ")
 	if not summary then
 		return
 	end
@@ -376,13 +370,9 @@ function action_setminingmode()
 		uci:save("cgminer")
 		uci:commit("cgminer")
 		if mmode == "customs" then
-			luci.http.redirect(
-			luci.dispatcher.build_url("admin", "cgminer", "cgminer")
-			)
+			luci.http.redirect(luci.dispatcher.build_url("admin", "services", "cgminer"))
 		else
-			luci.http.redirect(
-			luci.dispatcher.build_url("admin", "cgminer", "cgminerstatus", "ctrl", "restart")
-			)
+			luci.http.redirect(luci.dispatcher.build_url("admin", "services", "cgminerstatus", "ctrl", "restart"))
 		end
 	end
 end
@@ -526,5 +516,6 @@ end
 
 function action_cgminerdebug()
 	luci.util.exec("cgminer-api \"debug|D\"")
-	luci.http.redirect(luci.dispatcher.build_url("admin", "cgminer", "cgminerapi"))
+	luci.http.redirect(luci.dispatcher.build_url("admin", "services", "cgminerapi"))
 end
+
