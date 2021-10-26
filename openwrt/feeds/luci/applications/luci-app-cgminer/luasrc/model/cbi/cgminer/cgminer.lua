@@ -1,7 +1,5 @@
 --[[ Model - CGMiner ]]--
 
-require("luci.util")
-
 m = Map("cgminer", translate("Configuration"), "")
 
 conf = m:section(TypedSection, "cgminer", "")
