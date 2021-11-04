@@ -1,36 +1,45 @@
 <%+header%>
+
 <h2>
-<a id="content" name="content"><%:Upgrade MM Firmware%> - <%:Verify%></a>
+	<a id="content" name="content">
+		<%:Upgrade MM Firmware%> - <%:Verify%>
+	</a>
 </h2>
+
 <p>
 	<%_ The firmware was uploaded.
-		Below is the checksum and file size listed,
-		compare them with the original file to ensure data integrity.<br />
-		Click "Proceed" below to start the flash procedure. %>
+		Below is the checksum and file size listed, compare them with the original file to ensure data integrity.
+	<br />
+		Click "Proceed" below to start the flash procedure.
+	%>
 
 	<% if storage > 0 and size > storage then %>
-		<br /><br />
-		<div class="error"><%:It appears that you try to
-			flash an firmware that does not fit into the flash memory, please verify
-			the firmware file! %></div>
+	<br />
+	<br />
+	<div class="error">
+		<%:It appears that you try to flash an firmware that does not fit into the flash memory, please verify the firmware file%>
+	</div>
 	<% end %>
 
 </p>
 
 <fieldset class="cbi-section">
 	<ul>
-		<li><%:Checksum%>: <code><%=checksum%></code></li>
-		<li><%:Size%>: <%
+		<li><%:Checksum%>:
+			<code>
+				<%=checksum%>
+			</code>
+		</li>
+		<li><%:Size%>:
+		<%
 			local w = require "luci.tools.webadmin"
 			write(w.byte_format(size))
 
 			if storage > 0 then
-				write(luci.i18n.translatef(
-					" (%s available)",
-					w.byte_format(storage)
-				))
+				write(luci.i18n.translatef(" (%s available)", w.byte_format(storage)))
 			end
-		%></li>
+		%>
+		</li>
 	</ul>
 </fieldset>
 
@@ -43,4 +52,5 @@
 		<input class="cbi-button cbi-button-apply" type="submit" value="<%:Proceed%>" />
 	</form>
 </div>
+
 <%+footer%>

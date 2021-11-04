@@ -1,17 +1,48 @@
---[[ Model - CGMiner Status ]]--
+-- Model - CGMiner Status
 
-btn_restart = luci.dispatcher.build_url("admin", "services", "cgminerstatus", "ctrl", "restart")
-btn_stop = luci.dispatcher.build_url("admin", "services", "cgminerstatus", "ctrl", "stop")
-btn_start = luci.dispatcher.build_url("admin", "services", "cgminerstatus", "ctrl", "start")
-
-f = SimpleForm("cgminerstatus", translate("CGMiner Status") .. "<input type=\"button\" value=\"" .. translate("Restart CGMiner") .. "\" onclick=\"location.href='" .. btn_restart .. "'\" href=\"#\"/>" .. "<input type=\"button\" value=\"" .. translate("Stop CGMiner") .. "\" onclick=\"location.href='" .. btn_stop .. "'\" href=\"#\"/>" .. "<input type=\"button\" value=\"" .. translate("Start CGMiner") .. "\" onclick=\"location.href='" .. btn_start .. "'\" href=\"#\"/>")
+f = SimpleForm("cgminerstatus", translate("CGMiner Status"))
 
 f.reset = false
 f.submit = false
 
+function valuetodate(elapsed)
+	if elapsed then
+		local str
+		local days
+		local h
+		local m
+		local s = elapsed % 60;
+		elapsed = elapsed - s
+		elapsed = elapsed / 60
+		if elapsed == 0 then
+			str = string.format("%ds", s)
+		else
+			m = elapsed % 60;
+			elapsed = elapsed - m
+			elapsed = elapsed / 60
+			if elapsed == 0 then
+				str = string.format("%dm %ds", m, s);
+			else
+				h = elapsed % 24;
+				elapsed = elapsed - h
+				elapsed = elapsed / 24
+				if elapsed == 0 then
+					str = string.format("%dh %dm %ds", h, m, s)
+				else
+					str = string.format("%dd %dh %dm %ds", elapsed, h, m, s);
+				end
+			end
+		end
+		return str
+	end
+	return "date invalid"
+end
+
+-- Summary Table
+
 function get_summary()
 	local data = {}
-	local summary = luci.util.execi("/usr/bin/cgminer-api -o summary | sed \"s/|/\\n/g\" ")
+	local summary = luci.util.execi("/usr/bin/cgminer-api -o summary | sed \"s/|/\\n/g\"")
 	if not summary then
 		return
 	end
@@ -19,10 +50,9 @@ function get_summary()
 		return tostring(math.floor(n)):reverse():gsub("(%d%d%d)","%1,"):gsub(",(%-?)$","%1"):reverse()
 	end
 	for line in summary do
-		local elapsed, mhsav, foundblocks, getworks, accepted,
-		rejected, hw, utility, stale, getfailures,
-		remotefailures, networkblocks, totalmh,
-		diffaccepted, diffrejected, diffstale, bestshare =
+		local elapsed, mhsav, foundblocks, getworks, accepted, rejected,
+		hw, utility, stale, getfailures, remotefailures, networkblocks,
+		totalmh, diffaccepted, diffrejected, diffstale, bestshare =
 		line:match(".*," ..
 			"Elapsed=(-?%d+)," ..
 			"MHS av=(-?[%d%.]+)," ..
@@ -88,14 +118,17 @@ t1:option(DummyValue, "rejected", translate("Rejected"))
 t1:option(DummyValue, "networkblocks", translate("NetworkBlocks"))
 t1:option(DummyValue, "bestshare", translate("BestShare"))
 
+-- Devices Table
+
 function get_devs()
 	local data = {}
-	local devs = luci.util.execi("/usr/bin/cgminer-api -o edevs | sed \"s/|/\\n/g\" ")
+	local devs = luci.util.execi("/usr/bin/cgminer-api -o edevs | sed \"s/|/\\n/g\"")
 	if not devs then
 		return
 	end
 	for line in devs do
-		local asc, name, id, enabled, status, temp, mhsav, mhs5s, mhs1m, mhs5m, mhs15m, lvw, dh =
+		local asc, name, id, enabled, status, temp,
+		mhsav, mhs5s, mhs1m, mhs5m, mhs15m, lvw, dh =
 		line:match("ASC=(%d+)," ..
 			"Name=([%a%d]+)," ..
 			"ID=(%d+)," ..
@@ -143,39 +176,161 @@ t2:option(DummyValue, "status", translate("Status"))
 t2:option(DummyValue, "lvw", translate("LastValidWork"))
 
 ghsav = t2:option(DummyValue, "mhsav", translate("GHSav"))
+ghs5s = t2:option(DummyValue, "mhs5s", translate("GHS5s"))
+ghs1m = t2:option(DummyValue, "mhs1m", translate("GHS1m"))
+ghs5m = t2:option(DummyValue, "mhs5m", translate("GHS5m"))
+ghs15m = t2:option(DummyValue, "mhs15m", translate("GHS15m"))
 
 function ghsav.cfgvalue(self, section)
 	local v = Value.cfgvalue(self, section)
 	return string.format("%.2f", v/1000)
 end
 
-ghs5s = t2:option(DummyValue, "mhs5s", translate("GHS5s"))
-
 function ghs5s.cfgvalue(self, section)
 	local v = Value.cfgvalue(self, section)
 	return string.format("%.2f", v/1000)
 end
-
-ghs1m = t2:option(DummyValue, "mhs1m", translate("GHS1m"))
 
 function ghs1m.cfgvalue(self, section)
 	local v = Value.cfgvalue(self, section)
 	return string.format("%.2f", v/1000)
 end
 
-ghs5m = t2:option(DummyValue, "mhs5m", translate("GHS5m"))
-
 function ghs5m.cfgvalue(self, section)
 	local v = Value.cfgvalue(self, section)
 	return string.format("%.2f", v/1000)
 end
 
-ghs15m = t2:option(DummyValue, "mhs15m", translate("GHS15m"))
-
 function ghs15m.cfgvalue(self, section)
 	local v = Value.cfgvalue(self, section)
 	return string.format("%.2f", v/1000)
 end
+
+-- Stats Table
+
+function get_stats()
+	local data = {}
+	local stats = luci.util.execi("/usr/bin/cgminer-api -o estats | sed \"s/|/\\n/g\" | grep AV9")
+	if not stats then
+		return
+	end
+	for line in stats do
+		local id =
+		line:match(".*" ..
+		"ID=AV9([%d]+),")
+		if id then
+			local istart, iend = line:find("MM ID")
+			while (istart) do
+				local istr = line:sub(istart)
+				local idname
+				local index, idn, dnan, elapsedn, lwn, dhn, tempn, tempm,
+				fann, fanr, ghsmm, wun, pgn, ledn, echu, ecmm, crc =
+				istr:match("MM ID(%d+)=" ..
+					"Ver%[([%+%-%d%a]+)%]" ..
+					".-" ..
+					"DNA%[(%x+)%]" ..
+					".-" ..
+					"Elapsed%[(-?%d+)%]" ..
+					".-" ..
+					"LW%[(-?%d+)%]" ..
+					".-" ..
+					"DH%[(-?[%.%d%%]+)%]" ..
+					".-" ..
+					"Temp%[(-?%d+)%]" ..
+					".-" ..
+					"TMax%[(-?%d+)%]" ..
+					".-" ..
+					"Fan%[(-?%d+)%]" ..
+					".-" ..
+					"FanR%[(-?%d+%%)%]" ..
+					".-" ..
+					"GHSmm%[(-?[%.%d]+)%]" ..
+					".-" ..
+					"WU%[(-?[%.%d]+)%]" ..
+					".-" ..
+					"PG%[(%d+)%]" ..
+					".-" ..
+					"Led%[(%d)%]" ..
+					".-" ..
+					"ECHU%[(%d+%s%d+%s%d+%s%d+)%]" ..
+					".-" ..
+					"ECMM%[(%d+)%]" ..
+					".-" ..
+					"CRC%[(%d+%s%d+%s%d+%s%d+)%]")
+				if idn ~= nil then
+					idname = 'A' .. string.sub(idn, 1, 3) .. 'S-'
+					data[#data+1] = {
+						['devid'] = id,
+						['moduleid'] = tostring(index),
+						['id'] = idname .. id .. '-' .. tostring(index),
+						['mm'] = idn,
+						['dna'] = string.sub(dnan, -4, -1),
+						['elapsed'] = valuetodate(elapsedn),
+						['lw'] = lwn or '0',
+						['dh'] = dhn or '0',
+						['temp'] = (tempn or '0') .. ' / ' .. (tempm or '0'),
+						['fan'] = (fann or '0') .. 'RPM / ' .. (fanr or '0'),
+						['ghsmm'] = ghsmm or '0',
+						['wu'] = wun or '0',
+						['pg'] = pgn or '0',
+						['led'] = ledn or '0',
+						['echu'] = echu or '0',
+						['ecmm'] = ecmm or '0',
+						['crc'] = crc or '0'
+					}
+				end
+				istart, iend = line:find("MM ID", iend + 1)
+			end
+		end
+	end
+	return data
+end
+
+local stats = get_stats()
+
+t3 = f:section(Table, stats, translate("Avalon Devices Status"))
+
+indicator = t3:option(Button, "_indicator", translate("Indicator"))
+
+function indicator.render(self, section, scope)
+	if stats[section].led == '0' then
+		self.title = translate("LED OFF")
+	else
+		self.title = translate("LED ON")
+	end
+	Button.render(self, section, scope)
+end
+
+function indicator.write(self, section)
+	cmd = "/usr/bin/cgminer-api " .. "\'ascset|" .. stats[section].devid .. ',led,' .. stats[section].moduleid .. "\'"
+	luci.util.execi(cmd)
+	if stats[section].led == '0' then
+		stats[section].led = '1'
+	else
+		stats[section].led = '0'
+	end
+end
+
+reboot = t3:option(Button, "_reboot", translate("Reboot"))
+
+function reboot.write(self, section)
+	cmd = "/usr/bin/cgminer-api " .. "\'ascset|" .. stats[section].devid .. ',reboot,' .. stats[section].moduleid .. "\'"
+	luci.util.execi(cmd)
+end
+
+t3:option(DummyValue, "elapsed", translate("Elapsed"))
+t3:option(DummyValue, "id", translate("<abbr title=\"Device ID\">Device</abbr>"))
+t3:option(DummyValue, "mm", translate("<abbr title=\"MM Version\">MM</abbr>"))
+t3:option(DummyValue, "dna", translate("<abbr title=\"MM DNA\">DNA</abbr>"))
+t3:option(DummyValue, "lw", translate("LocalWorks"))
+t3:option(DummyValue, "dh", translate("<abbr title=\"Device Hardware Error\">DH</abbr>"))
+t3:option(DummyValue, "ghsmm", translate("GHSasc"))
+t3:option(DummyValue, "wu", translate("WU"))
+t3:option(DummyValue, "temp", translate("<abbr title=\"Inflow/Outflow\">Temperature(C)</abbr>"))
+t3:option(DummyValue, "fan", translate("<abbr title=\"RPM/Percentage\">Fan</abbr>"))
+t3:option(DummyValue, "pg", translate("<abbr title=\"Power Good\">PG</abbr>"))
+
+-- Pools Table
 
 function get_pools()
 	local data = {}
@@ -184,7 +339,8 @@ function get_pools()
 		return
 	end
 	for line in pools do
-		local pi, url, st, pri, quo, lp, gw, a, r, sta, gf, rf, user, lst, ds, da, dr, dsta, lsd, hs, sa, sd, hg =
+		local pi, url, st, pri, quo, lp, gw, a, r, sta, gf, rf,
+		user, lst, ds, da, dr, dsta, lsd, hs, sa, sd, hg =
 		line:match("POOL=(-?%d+)," ..
 			"URL=(.*)," ..
 			"Status=(%a+)," ..
@@ -250,175 +406,39 @@ end
 
 local pools = get_pools()
 
-t3 = f:section(Table, pools, translate("Pools"))
+t4 = f:section(Table, pools, translate("Pools"))
 
-t3:option(DummyValue, "pool", translate("Pool"))
-t3:option(DummyValue, "url", translate("URL"))
-t3:option(DummyValue, "stratumactive", translate("StratumActive"))
-t3:option(DummyValue, "user", translate("User"))
-t3:option(DummyValue, "status", translate("Status"))
-t3:option(DummyValue, "stratumdifficulty", translate("StratumDifficulty"))
-t3:option(DummyValue, "getworks", translate("GetWorks"))
-t3:option(DummyValue, "accepted", translate("Accepted"))
-t3:option(DummyValue, "rejected", translate("Rejected"))
-t3:option(DummyValue, "stale", translate("Stale"))
-t3:option(DummyValue, "lastsharetime", translate("LST"))
-t3:option(DummyValue, "lastsharedifficulty", translate("LSD"))
+t4:option(DummyValue, "pool", translate("Pool"))
+t4:option(DummyValue, "url", translate("URL"))
+t4:option(DummyValue, "stratumactive", translate("StratumActive"))
+t4:option(DummyValue, "user", translate("User"))
+t4:option(DummyValue, "status", translate("Status"))
+t4:option(DummyValue, "stratumdifficulty", translate("StratumDifficulty"))
+t4:option(DummyValue, "getworks", translate("GetWorks"))
+t4:option(DummyValue, "accepted", translate("Accepted"))
+t4:option(DummyValue, "rejected", translate("Rejected"))
+t4:option(DummyValue, "stale", translate("Stale"))
+t4:option(DummyValue, "lastsharetime", translate("LST"))
+t4:option(DummyValue, "lastsharedifficulty", translate("LSD"))
 
-function get_stats()
-	local data = {}
-	local stats = luci.util.execi("/usr/bin/cgminer-api -o estats | sed \"s/|/\\n/g\" | grep AV9")
-	if not stats then
-		return
-	end
-	for line in stats do
-		local id =
-		line:match(".*" ..
-		"ID=AV9([%d]+),")
-		if id then
-			local istart, iend = line:find("MM ID")
-			while (istart) do
-				local istr = line:sub(istart)
-				local idname
-				local index, idn, dnan, elapsedn, lwn, dhn, tempn, tempm, fann, fanr, ghsmm, wun, pgn, ledn, echu, ecmm, crc =
-				istr:match("MM ID(%d+)=" ..
-					"Ver%[([%+%-%d%a]+)%]" ..
-					".-" ..
-					"DNA%[(%x+)%]" ..
-					".-" ..
-					"Elapsed%[(-?%d+)%]" ..
-					".-" ..
-					"LW%[(-?%d+)%]" ..
-					".-" ..
-					"DH%[(-?[%.%d%%]+)%]" ..
-					".-" ..
-					"Temp%[(-?%d+)%]" ..
-					".-" ..
-					"TMax%[(-?%d+)%]" ..
-					".-" ..
-					"Fan%[(-?%d+)%]" ..
-					".-" ..
-					"FanR%[(-?%d+%%)%]" ..
-					".-" ..
-					"GHSmm%[(-?[%.%d]+)%]" ..
-					".-" ..
-					"WU%[(-?[%.%d]+)%]" ..
-					".-" ..
-					"PG%[(%d+)%]" ..
-					".-" ..
-					"Led%[(%d)%]" ..
-					".-" ..
-					"ECHU%[(%d+%s%d+%s%d+%s%d+)%]" ..
-					".-" ..
-					"ECMM%[(%d+)%]" ..
-					".-" ..
-					"CRC%[(%d+%s%d+%s%d+%s%d+)%]")
-				if idn ~= nil then
-					idname = 'A' .. string.sub(idn, 1, 3) .. 'S-'
-					data[#data+1] = {
-						['devid'] = id,
-						['moduleid'] = tostring(index),
-						['id'] = idname .. id .. '-' .. tostring(index),
-						['mm'] = idn,
-						['dna'] = string.sub(dnan, -4, -1),
-						['elapsed'] = valuetodate(elapsedn),
-						['lw'] = lwn or '0',
-						['dh'] = dhn or '0',
-						['temp'] = (tempn or '0') .. ' / ' .. (tempm or '0'),
-						['fan'] = (fann or '0') .. 'RPM / ' .. (fanr or '0'),
-						['ghsmm'] = ghsmm or '0',
-						['wu'] = wun or '0',
-						['pg'] = pgn or '0',
-						['led'] = ledn or '0',
-						['echu'] = echu or '0',
-						['ecmm'] = ecmm or '0',
-						['crc'] = crc or '0'
-					}
-				end
-				istart, iend = line:find("MM ID", iend + 1)
-			end
-		end
-	end
-	return data
+-- Controls Table
+
+t5 = f:section(Table, {{}}, translate("CGminer Control"))
+
+start = t5:option(Button, "_start", translate("Start"))
+restart = t5:option(Button, "_restart", translate("Restart"))
+stop = t5:option(Button, "_stop", translate("Stop"))
+
+function start.write(self, section)
+	luci.dispatcher.build_url("admin", "services", "cgminerstatus", "ctrl", "start")
 end
 
-local stats = get_stats()
-
-t4 = f:section(Table, stats, translate("Avalon Devices Status"))
-
-indicator = t4:option(Button, "_indicator", translate("Indicator"))
-
-function indicator.render(self, section, scope)
-	if stats[section].led == '0' then
-		self.title = translate("LED OFF")
-	else
-		self.title = translate("LED ON")
-	end
-	Button.render(self, section, scope)
+function restart.write(self, section)
+	luci.dispatcher.build_url("admin", "services", "cgminerstatus", "ctrl", "restart")
 end
 
-function indicator.write(self, section)
-	cmd = "/usr/bin/cgminer-api " .. "\'ascset|" .. stats[section].devid .. ',led,' .. stats[section].moduleid .. "\'"
-	luci.util.execi(cmd)
-	if stats[section].led == '0' then
-		stats[section].led = '1'
-	else
-		stats[section].led = '0'
-	end
-end
-
-reboot = t4:option(Button, "_reboot", translate("Reboot"))
-
-function reboot.write(self, section)
-	cmd = "/usr/bin/cgminer-api " .. "\'ascset|" .. stats[section].devid .. ',reboot,' .. stats[section].moduleid .. "\'"
-	luci.util.execi(cmd)
-end
-
-t4:option(DummyValue, "elapsed", translate("Elapsed"))
-t4:option(DummyValue, "id", translate("<abbr title=\"Device ID\">Device</abbr>"))
-t4:option(DummyValue, "mm", translate("<abbr title=\"MM Version\">MM</abbr>"))
-t4:option(DummyValue, "dna", translate("<abbr title=\"MM DNA\">DNA</abbr>"))
-t4:option(DummyValue, "lw", translate("LocalWorks"))
-t4:option(DummyValue, "dh", translate("<abbr title=\"Device Hardware Error\">DH</abbr>"))
-t4:option(DummyValue, "ghsmm", translate("GHSasc"))
-t4:option(DummyValue, "wu", translate("WU"))
-t4:option(DummyValue, "temp", translate("<abbr title=\"Inflow/Outflow\">Temperature(C)</abbr>"))
-t4:option(DummyValue, "fan", translate("<abbr title=\"RPM/Percentage\">Fan</abbr>"))
-t4:option(DummyValue, "pg", translate("<abbr title=\"Power Good\">PG</abbr>"))
-
-function valuetodate(elapsed)
-	if elapsed then
-		local str
-		local days
-		local h
-		local m
-		local s = elapsed % 60;
-		elapsed = elapsed - s
-		elapsed = elapsed / 60
-		if elapsed == 0 then
-			str = string.format("%ds", s)
-		else
-			m = elapsed % 60;
-			elapsed = elapsed - m
-			elapsed = elapsed / 60
-			if elapsed == 0 then
-				str = string.format("%dm %ds", m, s);
-			else
-				h = elapsed % 24;
-				elapsed = elapsed - h
-				elapsed = elapsed / 24
-				if elapsed == 0 then
-					str = string.format("%dh %dm %ds", h, m, s)
-				else
-					str = string.format("%dd %dh %dm %ds", elapsed, h, m, s);
-				end
-			end
-		end
-		return str
-	else
-		return "date invalid"
-	end
-	return ""
+function stop.write(self, section)
+	luci.dispatcher.build_url("admin", "services", "cgminerstatus", "ctrl", "stop")
 end
 
 return f

@@ -1,32 +1,40 @@
 <%+header%>
+
 <h2>
-<a id="content" name="content"><%:MM upgrade%></a>
+	<a id="content" name="content">
+		<%:MM upgrade%>
+	</a>
 </h2>
+
 <fieldset class="cbi-section">
-	<legend><%:Flash new MM firmware image%></legend>
+	<legend>
+		<%:Flash new MM firmware image%>
+	</legend>
 	<% if mm_upgrade_avail then %>
 	<form method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data">
 	    <div class="cbi-section-descr">
-	    	<%:Upload a .mcs file here to replace the original MM firmware. %>
-	    	<span style="color:red"></span>
+	    	<%:Upload a .mcs file here to replace the original MM firmware%>
 	    </div>
 		<div class="cbi-section-node">
 			<div class="cbi-value cbi-value-last<% if mm_image_invalid then %> cbi-value-error<% end %>">
-				<label class="cbi-value-title" for="image"><%:MM firmware%>:</label>
+				<label class="cbi-value-title" for="image">
+					<%:MM firmware%>:
+				</label>
 				<div class="cbi-value-field">
 					<input type="file" name="image" id="image" />
-					<input type="submit" class="cbi-button cbi-input-apply" value="<%:Upload%>" />
+					<input type="submit" class="cbi-button cbi-button-apply" value="<%:Upload%>" />
 				</div>
 			</div>
 		</div>
 		<% if mm_image_invalid then %>
-			<div class="cbi-section-error"><%:uploaded firmware is invalid. %></div>
+			<div class="cbi-section-error"><%:uploaded firmware is invalid%></div>
 		<% end %>
 	</form>
 	<% else %>
 	<div class="cbi-section-descr">
-		<%:the firmware does not support mm upgrade, please upgrade your firmware or change another platform.%>
+		<%:the firmware does not support mm upgrade%>
 	</div>
 	<% end %>
 </fieldset>
+
 <%+footer%>

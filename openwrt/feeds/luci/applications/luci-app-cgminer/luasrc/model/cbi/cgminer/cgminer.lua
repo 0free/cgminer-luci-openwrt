@@ -1,39 +1,39 @@
---[[ Model - CGMiner ]]--
+-- Model - CGMiner
 
-m = Map("cgminer", translate("Configuration"), "")
+m = Map("cgminer", translate("Configuration"))
 
-conf = m:section(TypedSection, "cgminer", "")
+conf = m:section(TypedSection, "cgminer", translate(""))
 conf.anonymous = true
 conf.addremove = false
 
-ntp = conf:option(ListValue, "ntp_enable", translate("NTP Service(Default: Disable)"))
+ntp = conf:option(ListValue, "ntp_enable", translate("NTP Service (Default: Disable)"))
 ntp.default = "disable"
-ntp:value("asia", translate("ASIA"))
+ntp:value("asia", translate("Muscat"))
 ntp:value("openwrt", translate("OpenWrt Default"))
 ntp:value("disable", translate("Disable"))
 
-pool1url = conf:option(Value, "pool1url", translate("Pool 1"))
+pool1url = conf:option(Value, "pool1url", translate("Pool-1"))
 pool1url.datatype = "string"
 pool1url:value("stratum+tcp://ss.antpool.com:3333")
 pool1url:value("stratum+tcp://sha256.eu-west.nicehash.com:3334")
-pool1user = conf:option(Value, "pool1user", translate("Pool1 worker"))
-pool1pw = conf:option(Value, "pool1pw", translate("Pool1 password"))
+pool1user = conf:option(Value, "pool1user", translate("Pool-1 worker"))
+pool1pw = conf:option(Value, "pool1pw", translate("Pool-1 password"))
 
-pool2url = conf:option(Value, "pool2url", translate("Pool 2"))
+pool2url = conf:option(Value, "pool2url", translate("Pool-2"))
 pool2url.datatype = "string"
 pool2url:value("stratum+tcp://ss.antpool.com:443")
 pool2url:value("stratum+tcp://ss.antpool.com:80")
-pool2user = conf:option(Value, "pool2user", translate("Pool2 worker"))
-pool2pw = conf:option(Value, "pool2pw", translate("Pool2 password"))
+pool2user = conf:option(Value, "pool2user", translate("Pool-2 worker"))
+pool2pw = conf:option(Value, "pool2pw", translate("Pool-2 password"))
 
-pool3url = conf:option(Value, "pool3url", translate("Pool 3"))
+pool3url = conf:option(Value, "pool3url", translate("Pool-3"))
 pool3url.datatype = "string"
 pool3url:value("stratum+tcp://ss.antpool.com:25")
 pool3url:value("stratum+tcp://ss.antpool.com:81")
-pool3user = conf:option(Value, "pool3user", translate("Pool3 worker"))
-pool3pw = conf:option(Value, "pool3pw", translate("Pool3 password"))
+pool3user = conf:option(Value, "pool3user", translate("Pool-3 worker"))
+pool3pw = conf:option(Value, "pool3pw", translate("Pool-3 password"))
 
-vo = conf:option(ListValue, "voltage_level_offset", translate("Voltage Level Offset(Default: 0)"))
+vo = conf:option(ListValue, "voltage_level_offset", translate("Voltage Level Offset (Default: 0)"))
 vo.default = "0"
 vo:value("+1", translate("+1"))
 vo:value("-1", translate("-1"))

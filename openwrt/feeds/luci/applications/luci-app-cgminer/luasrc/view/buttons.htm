@@ -1,0 +1,18 @@
+<%+header%>
+
+<div>
+	<input type="button" class="cbi-button cbi-button-apply" value="Start"
+	onclick="location.href='<%=luci.dispatcher.build_url("admin", "services", "cgminerstatus", "ctrl", "start")%>'" href="#"/>
+</div>
+
+<div>
+	<input type="button" class="cbi-button cbi-button-reload" value="Retart"
+	onclick="location.href='<%=luci.dispatcher.build_url("admin", "services", "cgminerstatus", "ctrl", "restart")%>'" href="#"/>
+</div>
+
+<div>
+	<input type="button" class="cbi-button cbi-button-reset" value="Stop"
+	onclick="location.href='<%=luci.dispatcher.build_url("admin", "services", "cgminerstatus", "ctrl", "stop")%>'" href="#"/>
+</div>
+
+<%+footer%>

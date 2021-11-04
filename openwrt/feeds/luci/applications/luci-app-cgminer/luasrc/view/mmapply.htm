@@ -1,35 +1,46 @@
 <html>
 <head>
-<title><%:MM Upgrading%></title>
-<link rel="stylesheet" type="text/css" media="screen" href="<%=media%>/cascade.css" />
-<script type="text/javascript" src="<%=resource%>/xhr.js"></script>
-<script type="text/javascript">
-//<![CDATA[
-XHR.poll(5, '<%=luci.dispatcher.build_url("admin", "services", "checkupgrade")%>', null,
-	function(x, st)
-	{
-		if (st.finish)
-			location.href = '<%=luci.dispatcher.build_url("admin", "services", "mmupgrade")%>?step=3';
-	})
-</script>
+	<title><%: MM Upgrading%></title>
+	<link rel="stylesheet" type="text/css" media="screen" href="<%=media%>/cascade.css" />
+	<script type="text/javascript" src="<%=resource%>/xhr.js" ></script>
+
+	<script type="text/javascript">
+	//<![CDATA[
+	XHR.poll(5, '<%=luci.dispatcher.build_url("admin", "services", "checkupgrade")%>', null,
+		function(x, st)
+		{
+			if (st.finish)
+				location.href = '<%=luci.dispatcher.build_url("admin", "services", "mmupgrade")%>?step=3';
+		})
+	//]]>
+	</script>
+
 </head>
+
 <body>
 	<div id="maincontainer">
-		<div id="maincontent">
-			<h2><a id="content" name="content"><%:MM Upgrading ...%></a></h2>
-			<fieldset class="cbi-section">
-			    <p>
-			    <% if finish then %>
-			    <%:MM upgrade finish.%><br><br>
-			    <input type="button" value=" Return to Upgrade " onclick="location.href='<%=luci.dispatcher.build_url("admin", "services", "mmupgrade")%>'" href="#"/>
-			    <input type="button" value=" CGMiner Status" onclick="location.href='<%=luci.dispatcher.build_url("admin", "services", "cgminerstatus")%>'" href="#"/>
-			    <% else %>
-			    <img src="<%=resource%>/icons/loading.gif" alt="<%:Loading%>" style="vertical-align:middle" />
-			    <%:Waiting for MM upgrading ...%>
-			    </p>
-			    <% end %>
-			</fieldset>
-		</div>
+		<h2>
+			<a id="content" name="content">
+				<%: MM Upgrading ...%>
+			</a>
+		</h2>
+		<fieldset class="cbi-section">
+		    <p>
+			<% if finish then %>
+				<%: MM upgrade finish%>
+				<br />
+				<br />
+				<input type="button" value="Return to Upgrade"
+				onclick="location.href='<%=luci.dispatcher.build_url("admin", "services", "mmupgrade")%>'" href="#"/>
+				<input type="button" value="CGMiner Status"
+				onclick="location.href='<%=luci.dispatcher.build_url("admin", "services", "cgminerstatus")%>'" href="#"/>
+			<% else %>
+				<img src="<%=resource%>/icons/loading.gif" alt="<%:Loading%>" />
+				<%: waiting for MM upgrade ...%>
+		    </p>
+		    <% end %>
+		</fieldset>
 	</div>
 </body>
+
 </html>

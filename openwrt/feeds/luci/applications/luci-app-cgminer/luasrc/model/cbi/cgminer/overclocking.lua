@@ -1,6 +1,6 @@
---[[ Model - CGMiner OverClocking ]]--
+-- Model - CGMiner OverClocking
 
-login = SimpleForm("login", nil)
+login = SimpleForm("overclocking", nil, nil)
 login.reset = false
 login.submit = translate("Login")
 
@@ -16,7 +16,7 @@ set_list:value("disable", translate("Disable"))
 set_list:value("enable", translate("Enable"))
 
 if luci.http.formvalue("cbi.submit") then
-	pwd = luci.http.formvalue("password")
+	local pwd = luci.http.formvalue("password")
 	if pwd == "canaan" then
 		flag = f:formvalue("cbid.ohr.1.set")
 		i = 0
@@ -36,7 +36,7 @@ if luci.http.formvalue("cbi.submit") then
 	end
 end
 
-dummy = f:field(DummyValue,"dumm", "")
+dummy = f:field(DummyValue, "dummy", "")
 dummy.template = "overclockingwarn"
 
 return f

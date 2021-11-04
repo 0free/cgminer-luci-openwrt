@@ -1,4 +1,4 @@
---[[ Controller - CGMiner ]]--
+-- Controller - CGMiner
 
 module("luci.controller.cgminer", package.seeall)
 
@@ -31,11 +31,17 @@ function action_cgminerctrl(args)
 end
 
 function action_cgminerapi()
-	local pp = io.popen("echo -n \"[Firmware Version] => \"; cat /etc/avalon_version; /usr/bin/cgminer-api stats|sed 's/ =>/:/g'|sed 's/\\] /\\]\\n /g'|sed 's/:/ =>/g'")
+	local pp = io.popen("/usr/bin/cgminer-api stats|sed 's/ =>/:/g'|sed 's/\\] /\\]\\n /g'|sed 's/:/ =>/g'")
 	local data = pp:read("*a")
 	pp:close()
 	luci.template.render("cgminerapi", {api=data})
 end
+
+function action_cgminerdebug()
+	luci.util.exec("cgminer-api \"debug|D\"")
+	luci.http.redirect(luci.dispatcher.build_url("admin", "services", "cgminerapi"))
+end
+
 
 function action_setminingmode()
 	local uci = luci.model.uci.cursor()
@@ -180,10 +186,5 @@ function action_checkupgrade()
 	end
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(status)
-end
-
-function action_cgminerdebug()
-	luci.util.exec("cgminer-api \"debug|D\"")
-	luci.http.redirect(luci.dispatcher.build_url("admin", "services", "cgminerapi"))
 end
 
